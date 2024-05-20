@@ -44,44 +44,44 @@ class ScreenshotRecorder:
         self.root = root
         self.root.title("Screenshot Recorder")
         
-        self.position_button = tk.Button(root, text="位置情報を取得", command=self.show_canvas)
+        self.position_button = tk.Button(root, text="Obtain location information", command=self.show_canvas)
         self.position_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
 
-        tk.Label(root, text="範囲設定（左上の座標と幅・高さ）").grid(row=4, column=0, columnspan=2, padx=5, pady=5)
-        self.x_label = tk.Label(root, text="左上のX座標:")
+        tk.Label(root, text="Set range (top-left X coordinate, Y coordinate, width, height)").grid(row=4, column=0, columnspan=2, padx=5, pady=5)
+        self.x_label = tk.Label(root, text="top-left X　coordinate:")
         self.x_label.grid(row=5, column=0, padx=5, pady=5)
         self.x_entry = tk.Entry(root)
         self.x_entry.grid(row=5, column=1, padx=5, pady=5)
-        self.y_label = tk.Label(root, text="左上のY座標:")
+        self.y_label = tk.Label(root, text="top-left Y coordinate:")
         self.y_label.grid(row=6, column=0, padx=5, pady=5)
         self.y_entry = tk.Entry(root)
         self.y_entry.grid(row=6, column=1, padx=5, pady=5)
-        self.width_label = tk.Label(root, text="幅:")
+        self.width_label = tk.Label(root, text="width:")
         self.width_label.grid(row=7, column=0, padx=5, pady=5)
         self.width_entry = tk.Entry(root)
         self.width_entry.grid(row=7, column=1, padx=5, pady=5)
-        self.height_label = tk.Label(root, text="高さ:")
+        self.height_label = tk.Label(root, text="height:")
         self.height_label.grid(row=8, column=0, padx=5, pady=5)
         self.height_entry = tk.Entry(root)
         self.height_entry.grid(row=8, column=1, padx=5, pady=5)
 
-        self.interval_label = tk.Label(root, text="時間間隔(秒):")
+        self.interval_label = tk.Label(root, text="Time interval (seconds):")
         self.interval_label.grid(row=0, column=0, padx=5, pady=5)
         self.interval_entry = tk.Entry(root)
         self.interval_entry.grid(row=0, column=1, padx=5, pady=5)
 
-        self.select_button = tk.Button(root, text="保存するディレクトリを選択", command=self.select_save_directory)
+        self.select_button = tk.Button(root, text="Select directory to save", command=self.select_save_directory)
         self.select_button.grid(row=1, column=0, columnspan=2, padx=5, pady=5)
 
         self.directory_label = tk.Label(root, text="")
         self.directory_label.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
 
-        self.confirm_button = tk.Button(root, text="スクリーンショット範囲を確認", command=self.confirm_screenshot)
+        self.confirm_button = tk.Button(root, text="Confirm screenshot area", command=self.confirm_screenshot)
         self.confirm_button.grid(row=9, column=0, columnspan=2, padx=5, pady=5)
 
-        self.start_button = tk.Button(root, text="記録を開始", command=self.start_recording)
+        self.start_button = tk.Button(root, text="Start recording", command=self.start_recording)
         self.start_button.grid(row=10, column=0, padx=5, pady=5)
-        self.stop_button = tk.Button(root, text="記録を停止", command=self.stop_recording, state=tk.DISABLED)
+        self.stop_button = tk.Button(root, text="Stop recording", command=self.stop_recording, state=tk.DISABLED)
         self.stop_button.grid(row=10, column=1, padx=5, pady=5)
 
         self.text_label = tk.Label(root, text="")
@@ -91,7 +91,7 @@ class ScreenshotRecorder:
         self.y_entry.insert(0, "100")
         self.width_entry.insert(0, "300")
         self.height_entry.insert(0, "200")
-        self.interval_entry.insert(0, "5")
+        self.interval_entry.insert(0, "60")
 
         self.save_directory = ""
         self.recording = False
@@ -163,7 +163,11 @@ class ScreenshotRecorder:
 
     def record_data(self, x, y, width, height, interval):
         if not self.save_directory:
-            print("保存するディレクトリを選択してください。")
+            print("Please select the directory to save.")
+            self.recording = False
+            self.start_button.config(state=tk.NORMAL)
+            self.stop_button.config(state=tk.DISABLED)
+            self.progress_bar.stop()
             return
 
         while self.recording:
