@@ -4,7 +4,7 @@ import pyautogui
 import time
 from threading import Thread
 from datetime import datetime
-import numpy as np
+import os
 
 class TransparentCanvas(tk.Canvas):
     def __init__(self, parent, recorder):
@@ -48,7 +48,7 @@ class ScreenshotRecorder:
         self.position_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
 
         tk.Label(root, text="Set range (top-left X coordinate, Y coordinate, width, height)").grid(row=4, column=0, columnspan=2, padx=5, pady=5)
-        self.x_label = tk.Label(root, text="top-left X　coordinate:")
+        self.x_label = tk.Label(root, text="top-left X coordinate:")
         self.x_label.grid(row=5, column=0, padx=5, pady=5)
         self.x_entry = tk.Entry(root)
         self.x_entry.grid(row=5, column=1, padx=5, pady=5)
@@ -98,9 +98,15 @@ class ScreenshotRecorder:
         self.record_thread = None
         self.position_clicked = False
         
-        self.progress_bar_step = 0.1
         self.progress_bar = ttk.Progressbar(root, orient="horizontal", length=200, mode="determinate")
         self.progress_bar.grid(row=12, column=0, columnspan=2, padx=5, pady=5)
+
+        # ラジオボタンの追加
+        self.save_option = tk.StringVar(value="new_file")
+        self.new_file_radiobutton = tk.Radiobutton(root, text="Save as new file", variable=self.save_option, value="new_file")
+        self.new_file_radiobutton.grid(row=13, column=0, padx=5, pady=5)
+        self.overwrite_radiobutton = tk.Radiobutton(root, text="Overwrite file", variable=self.save_option, value="overwrite")
+        self.overwrite_radiobutton.grid(row=13, column=1, padx=5, pady=5)
 
     def select_save_directory(self):
         self.save_directory = filedialog.askdirectory()
@@ -114,7 +120,6 @@ class ScreenshotRecorder:
 
         screenshot = pyautogui.screenshot(region=(x, y, width, height))
         screenshot.show()
-
 
     def show_canvas(self):
         self.canvas_window = tk.Toplevel(self.root)
@@ -148,12 +153,8 @@ class ScreenshotRecorder:
         self.record_thread = Thread(target=self.record_data, args=(x, y, width, height, interval))
         self.record_thread.start()
         
-        self.progress_bar_interval = 1000  # ミリ秒単位で設定
-        self.progress_bar_max = interval
-        self.progress_bar["maximum"] = self.progress_bar_max
-        self.progress_bar.update()
-        self.progress_bar_value = 0
-        self.progress_bar.start(self.progress_bar_interval)
+        self.progress_bar["maximum"] = interval
+        self.progress_bar["value"] = 0
 
     def stop_recording(self):
         self.recording = False
@@ -170,18 +171,21 @@ class ScreenshotRecorder:
             self.progress_bar.stop()
             return
 
+        counter = 0  # オーバーライド用のカウンター
         while self.recording:
             screenshot = pyautogui.screenshot(region=(x, y, width, height))
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            file_path = f"{self.save_directory}/{timestamp}.png"
+            if self.save_option.get() == "new_file":
+                file_path = f"{self.save_directory}/{timestamp}.png"
+            else:  # overwrite
+                file_path = f"{self.save_directory}/screenshot.png"
+
             screenshot.save(file_path)
             self.text_label.config(text=f"Saved: {file_path}")
             
             # プログレスバーを更新
-            self.progress_bar_value += 1
-            if self.progress_bar_value >= self.progress_bar_max:
-                self.progress_bar_value = 0
-            self.progress_bar["value"] = self.progress_bar_value
+            self.progress_bar["value"] = (counter % self.progress_bar["maximum"]) + 1
+            counter += 1
             self.root.update_idletasks()
             time.sleep(interval)
 
