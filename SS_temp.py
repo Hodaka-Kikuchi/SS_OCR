@@ -148,7 +148,7 @@ class ScreenshotRecorder:
         self.record_thread = Thread(target=self.record_data, args=(x, y, width, height, interval))
         self.record_thread.start()
         
-        self.progress_bar_interval = interval * 100
+        self.progress_bar_interval = 1000  # ミリ秒単位で設定
         self.progress_bar_max = interval
         self.progress_bar["maximum"] = self.progress_bar_max
         self.progress_bar.update()
@@ -177,10 +177,11 @@ class ScreenshotRecorder:
             screenshot.save(file_path)
             self.text_label.config(text=f"Saved: {file_path}")
             
-            self.progress_bar_value += self.progress_bar_step
+            # プログレスバーを更新
+            self.progress_bar_value += 1
             if self.progress_bar_value >= self.progress_bar_max:
                 self.progress_bar_value = 0
-            self.progress_bar_max = interval
+            self.progress_bar["value"] = self.progress_bar_value
             self.root.update_idletasks()
             time.sleep(interval)
 
